@@ -19,8 +19,11 @@ namespace PlatformService
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private readonly IWebHostEnvironment _enviroment;
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
+            _enviroment = environment;
             Configuration = configuration;
         }
 
@@ -29,7 +32,20 @@ namespace PlatformService
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<AppDbContext>(optionsAction => optionsAction.UseInMemoryDatabase("InMemory"));
+            if (_enviroment.IsProduction())
+            {
+                Console.WriteLine("using sqlserver db");
+                services.AddDbContext<AppDbContext>(opt =>
+                {
+                   opt.UseSqlServer(Configuration.GetConnectionString("Platforms"));
+                });
+            }
+            else
+            {
+                Console.WriteLine("using inmem db");
+                services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMemory"));
+            }
+            
             services.AddScoped<IPlatformRepo, PlatfromRepo>();
             services.AddControllers();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -64,7 +80,7 @@ namespace PlatformService
                 endpoints.MapControllers();
             });
             
-            PrepDb.PrepPopulation(app);
+            PrepDb.PrepPopulation(app, env.IsProduction());
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using PlatformService.Models;
 
@@ -8,16 +10,32 @@ namespace PlatformService.Data
 {
     public static class PrepDb
     {
-        public static void PrepPopulation(IApplicationBuilder applicationBuilder)
+        public static void PrepPopulation(IApplicationBuilder applicationBuilder,
+            bool isProd)
         {
             using (var serviceScope = applicationBuilder.ApplicationServices.CreateScope())
             {
-                SeedData(serviceScope.ServiceProvider.GetService<AppDbContext>());
+                SeedData(serviceScope.ServiceProvider.GetService<AppDbContext>(), isProd);
             }
         }
 
-        private static void SeedData(AppDbContext context)
+        private static void SeedData(AppDbContext context, bool prod)
         {
+            if (prod)
+            {
+                Console.WriteLine("migrating");
+
+                try
+                {
+                    context.Database.Migrate();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+            }
+            
             if (!context.Platforms.Any())
             {
                 Console.WriteLine("Seeding data");
