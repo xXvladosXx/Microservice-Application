@@ -13,6 +13,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using PlatformService.AsyncDataServices;
+using PlatformService.Properties;
 using PlatformService.SyncDataServices.Http;
 
 namespace PlatformService
@@ -50,6 +52,7 @@ namespace PlatformService
             services.AddControllers();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
+            services.AddSingleton<IMessageBusClient, MessageBusClient>();
             
             services.AddSwaggerGen(c =>
             {

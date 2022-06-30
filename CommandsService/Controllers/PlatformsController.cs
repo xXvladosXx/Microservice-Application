@@ -1,5 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
+using AutoMapper;
+using CommandsService.Data;
+using CommandsService.Dtos;
 
 namespace CommandsService.Controllers
 {
@@ -7,10 +11,23 @@ namespace CommandsService.Controllers
     [ApiController]
     public class PlatformsController : ControllerBase
     {
-        public PlatformsController()
+        private readonly IMapper _mapper;
+        private readonly ICommandRepo _repository;
+
+        public PlatformsController(ICommandRepo repo, IMapper mapper)
         {
-            
+            _repository = repo;
+            _mapper = mapper;
         }
+
+        [HttpGet]
+        public ActionResult<IEnumerable<PlatformReadDto>> GetPlatforms()
+        {
+            var platformItems = _repository.GetAllPlatforms();
+
+            return Ok(_mapper.Map<IEnumerable<PlatformReadDto>>(platformItems));
+        }
+
 
         [HttpPost]
         public ActionResult TestInboundConnection()
